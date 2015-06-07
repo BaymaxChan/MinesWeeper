@@ -98,9 +98,7 @@ public class ChessBoardModelImpl extends BaseModel implements ChessBoardModelSer
 		return false;
 	}
 
-	/**
-	 * 示例方法，可选择是否保留该形式
-	 * 
+	/** 
 	 * 初始化BlockMatrix中的Block，并随机设置mineNum颗雷
 	 * 同时可以为每个Block设定附近的雷数
 	 * @param mineNum
@@ -110,30 +108,44 @@ public class ChessBoardModelImpl extends BaseModel implements ChessBoardModelSer
 		int width = blockMatrix.length;
 		int height = blockMatrix[0].length;
 		
-		int index = 0;
-		
-		//初始化及布雷
-		for(int i = 0 ; i<width; i++){
-			for (int j = 0 ; j< height; j++){
+		for (int i = 0; i < width; i++) {
+			for (int j = 0; j < height; j++) {
 				blockMatrix[i][j] = new BlockPO(i,j);
-				//放置雷，并设定block附近雷数，现有放置方法为固定方法，请添加随机实现
-				index ++;
-				if(index == 2){
-					if(mineNum>0){
-						if(i>3&&j>3){
-							blockMatrix[i-1][j-1].setMine(true);
-						
-							addMineNum(i-1,j-1);
-							mineNum--;
-						}
-					}
-					index = 0;
-				}
-				
 			}
 		}
 		
-		
+		//随机设雷
+		for (int i = 0; i < mineNum; i++) {
+			while(true){
+				int w = (int) (Math.random() * width);
+				int h = (int) (Math.random() * height);
+				if(!blockMatrix[w][h].isMine()){
+					blockMatrix[w][h].setMine(true);
+					this.addMineNum(w, h);
+					break;
+				}
+			}	
+		}
+//		int index = 0;		
+//		//初始化及布雷
+//		for(int i = 0 ; i<width; i++){
+//			for (int j = 0 ; j< height; j++){
+//				blockMatrix[i][j] = new BlockPO(i,j);
+//				//放置雷，并设定block附近雷数，现有放置方法为固定方法，请添加随机实现
+//				index ++;
+//				if(index == 2){
+//					if(mineNum>0){
+//						if(i>3&&j>3){
+//							blockMatrix[i-1][j-1].setMine(true);
+//						
+//							addMineNum(i-1,j-1);
+//							mineNum--;
+//						}
+//					}
+//					index = 0;
+//				}	
+//			}
+//		}
 		return false;
 	}
 	
@@ -155,7 +167,6 @@ public class ChessBoardModelImpl extends BaseModel implements ChessBoardModelSer
 			int tempJ = j-1;
 			for(;tempJ<=j+1;tempJ++){
 				if((tempI>-1&&tempI<width)&&(tempJ>-1&&tempJ<height)){
-//					System.out.println(i+";"+j+":"+tempI+";"+tempJ+":");
 					blockMatrix[tempI][tempJ].addMine();
 				}
 			}

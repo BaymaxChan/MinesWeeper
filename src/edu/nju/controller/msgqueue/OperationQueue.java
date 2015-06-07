@@ -13,7 +13,9 @@ import edu.nju.model.service.GameModelService;
  *
  */
 public class OperationQueue implements Runnable{
-	
+	/**
+	 * 可以发生阻塞的安全队列
+	 */
 	private static BlockingQueue<MineOperation> queue;
 	
 	public static boolean isRunning;
@@ -53,7 +55,10 @@ public class OperationQueue implements Runnable{
 		return true;
 	}
 	
-	
+	/**
+	 * 取出最上方的操作
+	 * @return
+	 */
 	private static MineOperation getNewMineOperation (){
 		MineOperation  operation = null;
 		try {
@@ -72,5 +77,4 @@ public class OperationQueue implements Runnable{
 	public static GameModelService getGameModel(){
 		return gameModel;
 	}
-
 }

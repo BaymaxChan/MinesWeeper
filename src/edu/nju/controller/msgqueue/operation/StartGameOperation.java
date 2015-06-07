@@ -13,5 +13,4 @@ public class StartGameOperation extends MineOperation{
 		game.setGameLevel("小");
 		game.startGame();
 	}
-
 }

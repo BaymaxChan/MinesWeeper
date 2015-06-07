@@ -44,5 +44,4 @@ public class ParameterModelImpl extends BaseModel implements ParameterModelServi
 		super.updateChange(new UpdateMessage("mineNum", mineNum));
 		return true;
 	}
-
 }

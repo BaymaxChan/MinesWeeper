@@ -43,5 +43,4 @@ public class MyButton extends JLabel {
 //		this.image = image;
 		repaint();
 	}
-
 }

@@ -59,10 +59,7 @@ public class MineBoardPanel extends JPanel implements Observer {
             }
 		}
 	}
-
 	
-
-
 	public static MyButton[][] getjLabelButtons() {
 		return jLabelButtons;
 	}

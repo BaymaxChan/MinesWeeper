@@ -1,7 +1,5 @@
 package edu.nju.controller.impl;
 
-import edu.nju.controller.msgqueue.OperationQueue;
-import edu.nju.controller.msgqueue.operation.MineOperation;
 import edu.nju.controller.service.SettingControllerService;
 
 public class SettingControllerImpl implements SettingControllerService{

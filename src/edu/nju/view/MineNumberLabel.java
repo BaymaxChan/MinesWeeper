@@ -33,5 +33,4 @@ public class MineNumberLabel extends JLabel implements Observer {
 	public void setReamainMinesNumber(int reamainMinesNumber) {
 		this.reamainMinesNumber = reamainMinesNumber;
 	}
-
 }

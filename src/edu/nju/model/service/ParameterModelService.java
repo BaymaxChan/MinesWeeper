@@ -3,7 +3,6 @@ package edu.nju.model.service;
 /**
  * 负责控制游戏参数Model，现有参数：剩余雷数
  * @author Wangy
- *
  */
 public interface ParameterModelService {
 

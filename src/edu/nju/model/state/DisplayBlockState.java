@@ -20,7 +20,11 @@ public enum DisplayBlockState {
 		this.index = index;
 	}
 	
-	
+	/**
+	 * 返回方块状态
+	 * @param index
+	 * @return
+	 */
 	public static DisplayBlockState getClickState(int index){		
 		 for (DisplayBlockState s : DisplayBlockState.values()) {
              if (s.getIndex() == index) {

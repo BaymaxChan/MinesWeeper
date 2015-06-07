@@ -5,10 +5,10 @@ import edu.nju.model.service.ChessBoardModelService;
 /**
  * 鼠标左击对应操作
  */
-public class LeftClickOperation extends MineOperation{
+public class RightClickOperation extends MineOperation{
 	private int x;
 	private int y;
-	public LeftClickOperation(int x ,int y){
+	public RightClickOperation(int x ,int y){
 		this.x = x;
 		this.y = y;
 	}
@@ -17,6 +17,6 @@ public class LeftClickOperation extends MineOperation{
 	public void execute() {
 		// TODO Auto-generated method stub
 		ChessBoardModelService chess = OperationQueue.getChessBoardModel();
-		chess.excavate(x, y);
+		chess.mark(x, y);
 	}
 }
