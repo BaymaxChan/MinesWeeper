@@ -1,21 +1,15 @@
 package edu.nju.network.modelProxy;
 
 import java.util.Observable;
-import java.util.Observer;
 
-import edu.nju.model.impl.BaseModel;
 import edu.nju.model.impl.UpdateMessage;
+import edu.nju.model.service.ParameterModelService;
 import edu.nju.network.TransformObject;
-import edu.nju.network.client.ClientService;
 
-/**
- * 所有的代理类的基类。
- * @author 晨晖
- *
- */
-public class ModelProxy extends BaseModel implements Observer{
-	protected ClientService net;
-	@Override
+public class ParameterModelProxy extends ModelProxy implements ParameterModelService {
+	private int clientCount = 0;
+	
+	
 	public void update(Observable o, Object arg) {
 		// TODO Auto-generated method stub
 		TransformObject obj = (TransformObject) arg;
@@ -27,6 +21,9 @@ public class ModelProxy extends BaseModel implements Observer{
 		try {
 			if(super_class.isAssignableFrom(Class.forName(trigger_class))){
 //				System.out.println(this.getClass().getName()+" get the UpdateMessage!");
+//				System.out.println(msg.getValue());
+				int remainMinesNum = this.getClientMinesNumber((String)msg.getValue());
+				msg.setValue(remainMinesNum);
 				this.updateChange(msg);
 //				System.out.println("UpdateMessage send!!!");
 			}
@@ -34,5 +31,33 @@ public class ModelProxy extends BaseModel implements Observer{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+	@Override
+	public boolean setMineNum(int num) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean minusMineNum() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean addMineNum() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	
+	private int getClientMinesNumber(String str){
+		String[] nums = str.split(" ");
+		int maxNum = Integer.parseInt(nums[0]);
+		int nowMaxNum = Integer.parseInt(nums[1]);
+		return maxNum - nowMaxNum;
+	}
+	@Override
+	public byte judgeWinner() {
+		return 0;
 	}
 }

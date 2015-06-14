@@ -6,5 +6,5 @@ package edu.nju.model.state;
  * UNCLICK,CLICK,FLAG
  */
 public enum BlockState {
-	UNCLICK,CLICK,FLAG
+	UNCLICK,CLICK,FLAG,
 }

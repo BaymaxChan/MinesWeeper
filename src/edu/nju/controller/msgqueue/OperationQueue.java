@@ -19,19 +19,24 @@ public class OperationQueue implements Runnable{
 	private static BlockingQueue<MineOperation> queue;
 	
 	public static boolean isRunning;
-	
-	public static boolean singleUpdateSwitch = true;
+	/**
+	 * 是否为己方操作
+	 */
+	public static boolean isHost = true;
+	public static boolean isClient = false;
 	
 	private static ChessBoardModelService chessBoard;
 	private static GameModelService gameModel;
+	private static ChessBoardModelService chessBoardBack;
+	private static GameModelService gameModelBack;
 	
 	public OperationQueue(ChessBoardModelService chess, GameModelService game){
 		queue = new ArrayBlockingQueue<MineOperation>(1000);
 		isRunning = true;
-		
 		chessBoard = chess;
+		chessBoardBack = chess;
 		gameModel = game;
-		
+		gameModelBack = game;
 	}
 
 	@Override
@@ -40,6 +45,7 @@ public class OperationQueue implements Runnable{
 		while(isRunning){
 			MineOperation operation = getNewMineOperation();
 			operation.execute();
+			isHost = true;
 		}
 	}
 	
@@ -76,5 +82,17 @@ public class OperationQueue implements Runnable{
 	
 	public static GameModelService getGameModel(){
 		return gameModel;
+	}
+	
+	public static void setProxy(ChessBoardModelService chessBoardProxy, GameModelService gameModelProxy){
+		chessBoard = chessBoardProxy;
+		gameModel = gameModelProxy;
+	}
+	
+	public static void backToSingle(){
+		chessBoard = chessBoardBack;
+		gameModel = gameModelBack;
+		isHost = true;
+		isClient = false;
 	}
 }

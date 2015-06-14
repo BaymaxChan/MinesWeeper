@@ -4,12 +4,14 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
+import edu.nju.controller.msgqueue.OperationQueue;
 import edu.nju.model.service.ChessBoardModelService;
 import edu.nju.model.service.GameModelService;
 import edu.nju.model.service.StatisticModelService;
 import edu.nju.model.state.GameResultState;
 import edu.nju.model.state.GameState;
 import edu.nju.model.vo.GameVO;
+import edu.nju.network.host.HostThread;
 
 public class GameModelImpl extends BaseModel implements GameModelService{
 	
@@ -37,16 +39,14 @@ public class GameModelImpl extends BaseModel implements GameModelService{
 		chessBoardModel.setGameModel(this);
 		
 		levelList = new ArrayList<GameLevel>();
-		levelList.add(new GameLevel(0,"大",30,16,99));
+		levelList.add(new GameLevel(0,"大",16,30,99));
 		levelList.add(new GameLevel(1,"中",16,16,40));
 		levelList.add(new GameLevel(2,"小",9,9,10));
 	}
 
-	@Override
 	public boolean startGame() {
-		// TODO Auto-generated method stub
 		gameState = GameState.RUN;
-		startTime = Calendar.getInstance().getTimeInMillis();
+		startTime = Calendar.getInstance().getTimeInMillis() - 1000;
 		
 		GameLevel gl = null;
 		for(GameLevel tempLevel : levelList){
@@ -55,10 +55,14 @@ public class GameModelImpl extends BaseModel implements GameModelService{
 				break;
 			}
 		}
-		if(gl == null&&width==0&&height == 0)
+		
+		if(gl == null&&width==0&&height == 0){
 			gl = levelList.get(2);
+			level = "小";
+		}
 		
 		if(gl != null){
+			level = gl.getName();
 			height = gl.getWidth();
 			width = gl.getHeight();
 			mineNum = gl.getMineNum();
@@ -70,25 +74,46 @@ public class GameModelImpl extends BaseModel implements GameModelService{
 		return true;
 	}
 	
-	@Override
 	public boolean gameOver(GameResultState result) {
-		// TODO Auto-generated method stub
-		
 		this.gameState = GameState.OVER;
 		this.gameResultStae = result;
 		this.time = (int)(Calendar.getInstance().getTimeInMillis() - startTime)/1000;
 		
-		this.statisticModel.recordStatistic(result, time);
-		
+		boolean isConnected = HostThread.isConnected;
+		if(!isConnected){
+			this.statisticModel.setLevel(this.level);
+			this.statisticModel.recordStatistic(result, time);
+		}
 		super.updateChange(new UpdateMessage("end",this.convertToDisplayGame()));		
+		if(!isConnected){
+			this.statisticModel.showStatistics();
+		}
+		
+		return true;
+	}
+	
+	public boolean showRecord(){
+		this.statisticModel.showStatistics();
 		return false;
 	}
 
 	@Override
 	public boolean setGameLevel(String level) {
-		// TODO Auto-generated method stub
 		//输入校验
-		this.level = level;
+		
+		String[] informs = level.split(" ");
+		if(informs.length == 3){
+			this.level = "自定义";
+			int h = Integer.parseInt(informs[0]);
+			int w = Integer.parseInt(informs[1]);
+			int n = Integer.parseInt(informs[2]);
+			if(levelList.size() == 4){
+				levelList.remove(3);
+			}
+			levelList.add(new GameLevel(3, "自定义", h, w, n));
+		}else{
+			this.level = level;
+		}
 		return true;
 	}
 
@@ -103,9 +128,9 @@ public class GameModelImpl extends BaseModel implements GameModelService{
 	}
 	
 	private GameVO convertToDisplayGame(){
-		return new GameVO(gameState, width, height,level, gameResultStae, time);
+		return new GameVO(gameState, width, height, level, gameResultStae, time);
 	}
-
+	
 	@Override
 	public List<GameLevel> getGameLevel() {
 		// TODO Auto-generated method stub

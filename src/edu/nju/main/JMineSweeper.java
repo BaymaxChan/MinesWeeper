@@ -16,7 +16,6 @@ public class JMineSweeper {
 
 	static MenuControllerService menuController = new MenuControllerImpl();
 	public static void main(String[] args) {
-		
 		MainFrame ui = new MainFrame();
 		StatisticModelImpl statisticModel = new StatisticModelImpl();
  		ParameterModelImpl mineNumberModel = new ParameterModelImpl();
@@ -24,6 +23,7 @@ public class JMineSweeper {
 		GameModelImpl gameModel = new GameModelImpl(statisticModel,mineBoardModel);		
  		
 		gameModel.addObserver(ui);
+		statisticModel.addObserver(ui);
  		mineNumberModel.addObserver(ui.getMineNumberLabel());
  		mineBoardModel.addObserver(ui.getMineBoard());
  		

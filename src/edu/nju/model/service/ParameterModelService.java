@@ -25,4 +25,10 @@ public interface ParameterModelService {
 	 */
 	public boolean addMineNum();
 	
+	/**
+	 * 联机时根据标出雷数判断输赢
+	 * @return
+	 */
+	public byte judgeWinner();
+	
 }

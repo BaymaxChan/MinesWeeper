@@ -4,6 +4,10 @@ package edu.nju.network.modelProxy;
 import java.util.List;
 
 import edu.nju.controller.msgqueue.operation.MineOperation;
+import edu.nju.controller.msgqueue.operation.SetCustomGameOperation;
+import edu.nju.controller.msgqueue.operation.SetEasyGameOperation;
+import edu.nju.controller.msgqueue.operation.SetHardGameOperation;
+import edu.nju.controller.msgqueue.operation.SetHellGameOperation;
 import edu.nju.controller.msgqueue.operation.StartGameOperation;
 import edu.nju.model.impl.GameLevel;
 import edu.nju.model.service.GameModelService;
@@ -23,13 +27,29 @@ public class GameModelProxy extends ModelProxy implements GameModelService{
 
 	@Override
 	public boolean setGameLevel(String level) {
-		// TODO Auto-generated method stub
-		return false;
+		MineOperation op;
+		switch(level){
+		case "小": op = new SetEasyGameOperation(); break;
+		case "中": op = new SetHardGameOperation(); break;
+		case "大": op = new SetHellGameOperation(); break;
+		default:
+			String[] informs = level.split(" ");
+			if(informs.length == 3){
+				int h = Integer.parseInt(informs[0]);
+				int w = Integer.parseInt(informs[1]);
+				int n = Integer.parseInt(informs[2]);
+				op = new SetCustomGameOperation(h, w, n);
+			}else{
+				op = new SetEasyGameOperation();
+			}
+			break;
+		}
+		net.submitOperation(op);
+		return true;
 	}
 
 	@Override
 	public boolean startGame() {
-		// TODO Auto-generated method stub
 		MineOperation op = new StartGameOperation();
 		net.submitOperation(op);
 		return true;
@@ -55,4 +75,9 @@ public class GameModelProxy extends ModelProxy implements GameModelService{
 		return false;
 	}
 
+	@Override
+	public boolean showRecord() {
+		// TODO Auto-generated method stub
+		return false;
+	}
 }

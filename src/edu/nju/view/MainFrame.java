@@ -6,73 +6,37 @@
 package edu.nju.view;
 
 import java.awt.Font;
-import java.awt.Window;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Observable;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
-import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 import javax.swing.JSeparator;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JLabel;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
- 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import edu.nju.controller.impl.MenuControllerImpl;
-import edu.nju.controller.service.MenuControllerService;
+import edu.nju.controller.msgqueue.OperationQueue;
 import edu.nju.model.impl.UpdateMessage;
+import edu.nju.model.po.StatisticPO;
 import edu.nju.model.state.GameResultState;
-import edu.nju.model.vo.BlockVO;
 import edu.nju.model.vo.GameVO;
+import edu.nju.network.client.ClientService;
+import edu.nju.network.client.ClientServiceImpl;
 import edu.nju.view.listener.CoreListener;
 import edu.nju.view.listener.MenuListener;
 
 import java.util.Observer;
 
-public class MainFrame implements Observer {
+public class MainFrame implements Observer, Runnable{
 	
 	//Variables declaration
 	private JFrame mainFrame; 
@@ -81,6 +45,7 @@ public class MainFrame implements Observer {
 	private JMenu game;
 	private HashMap<String, JMenuItem> menuItemMap;
 	private JMenuItem startItem;
+	private RecordDialog recordDialog = null;
 	/**
 	 * 分隔符
 	 */
@@ -113,6 +78,9 @@ public class MainFrame implements Observer {
 	 * 菜单监听
 	 */
 	private MenuListener menuListener;
+	
+	private final Thread thread;
+	private boolean isRunning;
 	//End of variables declaration
 
 	public MainFrame() {
@@ -126,6 +94,8 @@ public class MainFrame implements Observer {
 		initComponents();
 		mainFrame.setVisible(true);
 		mainFrame.setAlwaysOnTop(true);
+		thread = new Thread(this);
+		thread.start();
 	}
 
 	//Instantiation of components
@@ -156,8 +126,8 @@ public class MainFrame implements Observer {
 		group = new ButtonGroup();
 		
 		body = new MineBoardPanel(defaultHeight,defaultWidth);
-		coreListener = new CoreListener(this);
 		menuListener = new MenuListener(this);
+		coreListener = new CoreListener(this);
 	}
 	
 	/**
@@ -288,8 +258,7 @@ public class MainFrame implements Observer {
 		mainFrame.validate();
 		mainFrame.repaint();
 		easy.setSelected(true);
-		mainFrame
-				.setLocation((screenSize.width - head.getWidth()) / 2,
+		mainFrame.setLocation((screenSize.width - head.getWidth()) / 2,
 						(screenSize.height - aJMenuBar.getHeight()
 								- head.getHeight() - body.getHeight()) / 2);
 		/**
@@ -297,7 +266,6 @@ public class MainFrame implements Observer {
 		 */
 		mainFrame.addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
-				
 			}
 		});
 	}
@@ -339,12 +307,41 @@ public class MainFrame implements Observer {
 			restart(gameHeight,gameWidth,level);
 			startButton.setIcon(Images.START_RUN);
 		}else if(notifingObject.getKey().equals("end")){
+			GameVO newGame = (GameVO) notifingObject.getValue();
+			this.isRunning = false;
 			
+			if(newGame.getGameResultStae() == GameResultState.SUCCESS){
+				if(OperationQueue.isClient){
+					startButton.setIcon(Images.START_END);
+				}else{
+					startButton.setIcon(Images.START_BEGIN);
+				}
+			}else if(newGame.getGameResultStae() == GameResultState.FAIL){
+				if(OperationQueue.isClient){
+					startButton.setIcon(Images.START_BEGIN);
+				}else{
+					startButton.setIcon(Images.START_END);
+				}
+			}else if(newGame.getGameResultStae() == GameResultState.EQUAL){
+				startButton.setIcon(Images.START_BEGIN);
+			}
+		}else if(notifingObject.getKey().equals("record")){
+			List<StatisticPO> statistics = (List<StatisticPO>) notifingObject.getValue();
+			
+			if(statistics != null){
+				String[] names = new String[4];
+				double[] scores = new double[4];
+				for (int i = 0; i < 4; i++) {
+					names[i] = statistics.get(i).getName();
+					scores[i] = statistics.get(i).getWinrate();
+				}
+				recordDialog = new RecordDialog(this.mainFrame);
+				recordDialog.show(names, scores);
+			}	
 		}
 	}
-
+	
 	private void restart(int mineBoardHeight,int mineBoardWidth,String type) {
-
 		mainFrame.getContentPane().remove(body);
 		body = new MineBoardPanel(mineBoardHeight,mineBoardWidth);
 		head.setBounds(4, 5, mineBoardWidth * buttonSize + bodyMarginOther * 2 - 4, 65);
@@ -378,25 +375,27 @@ public class MainFrame implements Observer {
 		else if(type.equals("大")){
 			hell.setSelected(true);
 		}
-		else{
-			custom.setSelected(true);
-		}
-//		switch (type) {
-//		case "小":
-//			easy.setSelected(true);
-//			break;
-//		case "中":
-//			hard.setSelected(true);
-//			break;
-//		case "大":
-//			hell.setSelected(true);
-//			break;
-//		default:
-//			custom.setSelected(true);
-//			break;
-//		}
+		
 		mainFrame.validate();
 		mainFrame.repaint();
+		
+		isRunning = true;
+	}
+
+	public void run() {
+		while(true){
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			if(isRunning){
+				int count = Integer.parseInt(this.time.getText());
+				count ++;
+				this.time.setText(Integer.toString(count));
+			}
+		}
 	}
 }
 
